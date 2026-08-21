@@ -1,44 +1,48 @@
-#include <llapi/EventAPI.h>
-#include <llapi/LoggerAPI.h>
-#include <llapi/LLAPI.h>
-#include <llapi/mc/Player.hpp>
-#include <string>
-#include <vector>
-#include <algorithm>
+#include <ll/api/plugin/Plugin.h>
+#include <ll/api/event/EventBus.h>
+#include <ll/api/event/player/PlayerChatEvent.h>
+#include <ll/api/Logger.h>
+#include <mc/Player.hpp>
 
-Logger logger("DisablePrivateChat");
+using namespace ll::event;
 
-static const std::vector<std::string> blockedCmds = {
-    "/w ", "/w\t", "/tall ", "/tall\t", "/me ", "/me\t", "/msg ", "/msg\t"
-};
+namespace disable_private_chat {
 
-bool isBlockedCommand(const std::string& cmd) {
-    if (cmd.empty()) return false;
-    std::string lowerCmd = cmd;
-    std::transform(lowerCmd.begin(), lowerCmd.end(), lowerCmd.begin(), ::tolower);
-    for (const auto& prefix : blockedCmds) {
-        std::string lowerPrefix = prefix;
-        std::transform(lowerPrefix.begin(), lowerPrefix.end(), lowerPrefix.begin(), ::tolower);
-        if (lowerCmd.rfind(lowerPrefix, 0) == 0) return true;
-        std::string exactCmd = lowerCmd;
-        exactCmd.erase(exactCmd.find_last_not_of(" \t") + 1);
-        std::string exactPrefix = lowerPrefix;
-        exactPrefix.erase(exactPrefix.find_last_not_of(" \t") + 1);
-        if (exactCmd == exactPrefix) return true;
-    }
-    return false;
-}
+ll::Logger logger("DisablePrivateChat");
 
-void PluginInit() {
-    ll::registerPlugin("DisablePrivateChat", u8"禁用私聊指令插件", ll::Version(1, 0, 0));
-    logger.info(u8"[DisablePrivateChat] 插件已加载!");
-    Event::PlayerCmdEvent::subscribe([](const Event::PlayerCmdEvent& ev) {
-        if (!ev.mPlayer) return true;
-        if (isBlockedCommand(ev.mCommand)) {
-            ev.mPlayer->sendText(u8"§c§l[提示] §r§e服务器已禁用私聊");
-            logger.info(u8"玩家 {} 尝试使用私聊指令: {}", ev.mPlayer->getRealName(), ev.mCommand);
-            return false;
+bool onEnable(ll::plugin::Plugin& self) {
+    logger.info("DisablePrivateChat 已加载，已拦截玩家私聊消息");
+
+    // 监听玩家聊天事件
+    EventBus::getInstance().subscribe<PlayerChatEvent>(
+        EventPriority::Normal,
+        [](PlayerChatEvent& ev) {
+            auto& msg = ev.getMessage();
+            // 拦截 /msg /tell /w 私聊指令触发的聊天
+            if (msg.starts_with("/msg") || msg.starts_with("/tell") || msg.starts_with("/w")) {
+                ev.cancel();
+                ev.getPlayer().sendMessage("§c服务器已关闭私聊功能！");
+            }
         }
-        return true;
-    });
+    );
+
+    return true;
 }
+
+bool onDisable(ll::plugin::Plugin& self) {
+    logger.info("DisablePrivateChat 已卸载");
+    return true;
+}
+
+} // namespace disable_private_chat
+
+LL_PLUGIN_INFO(
+    disable_private_chat,
+    1,
+    0,
+    "Disable Private Chat",
+    "拦截服务器私聊 /msg /tell /w",
+    ""
+);
+LL_PLUGIN_ENABLE(disable_private_chat::onEnable);
+LL_PLUGIN_DISABLE(disable_private_chat::onDisable);
