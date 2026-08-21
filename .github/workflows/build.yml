@@ -13,16 +13,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        # 如果你的仓库本身包含子模块，请取消下面这行的注释
-        # with:
-        #   submodules: 'recursive'
 
       - name: Clone LiteLoader SDK (with submodules)
         shell: pwsh
         run: |
-          git clone --recursive --branch v2/main https://github.com/LiteLDev/LiteLoaderSDK.git SDK
+          git clone --recursive https://github.com/LiteLDev/LiteLoaderSDK.git SDK
           Write-Host "SDK cloned successfully"
-          # 检查 entt 目录是否存在（用于调试）
           if (Test-Path SDK/LiteLoader/include/entt) {
             Write-Host "entt found in SDK"
             Get-ChildItem SDK/LiteLoader/include/entt
