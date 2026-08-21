@@ -1,0 +1,45 @@
+name: Build DisablePrivateChat DLL
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      
+      - name: Clone LiteLoader SDK
+        shell: pwsh
+        run: |
+          git clone --branch v2 --depth 1 https://github.com/LiteLDev/LiteLoaderBDS.git SDK
+          Write-Host "SDK 克隆完成"
+          Get-ChildItem SDK/LiteLoader/lib -ErrorAction SilentlyContinue
+      
+      - name: Configure CMake
+        shell: pwsh
+        run: cmake -B build -S . -A x64
+      
+      - name: Build Plugin
+        shell: pwsh
+        run: cmake --build build --config Release
+      
+      - name: Check output
+        shell: pwsh
+        run: Get-ChildItem build/Release -Recurse -Filter "*.dll"
+      
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: DisablePrivateChat
+          path: build/Release/*.dll
+          if-no-files-found: error
