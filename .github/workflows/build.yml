@@ -13,11 +13,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Clone LeviLamina SDK (with submodules)
+      - name: Setup CMake
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Fetch LeviLamina SDK
         shell: pwsh
         run: |
-          git clone --recursive https://github.com/LiteLDev/LeviLamina.git SDK
-          Write-Host "SDK cloned successfully"
+          Invoke-WebRequest -Uri "https://github.com/LiteLDev/LeviLamina/releases/latest/download/sdk-windows-x64.zip" -OutFile "sdk.zip"
+          Expand-Archive sdk.zip -DestinationPath SDK
 
       - name: Configure CMake
         run: |
