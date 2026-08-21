@@ -16,12 +16,14 @@ jobs:
       - name: Clone LiteLoader SDK
         shell: pwsh
         run: |
-          git clone --branch v2/main --depth 1 https://github.com/LiteLDev/LiteLoaderBDS.git SDK
+          git clone --branch v2/main https://github.com/LiteLDev/LiteLoaderBDS.git SDK
           cd SDK
           git submodule update --init --recursive
           cd ..
           Write-Host "SDK 克隆完成"
-          Get-ChildItem SDK/LiteLoader/lib -ErrorAction SilentlyContinue
+          Get-ChildItem SDK/LiteLoader/include -ErrorAction SilentlyContinue
+          Get-ChildItem SDK/LiteLoader/include/entt -ErrorAction SilentlyContinue
+
 
 
       
