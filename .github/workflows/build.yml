@@ -20,13 +20,12 @@ jobs:
           Write-Host "SDK 克隆完成"
           Get-ChildItem SDK/LiteLoader/lib -ErrorAction SilentlyContinue
       
-      - name: Configure CMake
-        shell: pwsh
-        run: cmake -B build -S . -G "Visual Studio 17 2022" -A x64
-      
       - name: Build Plugin
-        shell: pwsh
-        run: cmake --build build --config Release
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          cmake -B build -S . -G "Visual Studio 17 2022" -A x64
+          cmake --build build --config Release
       
       - name: Check output
         shell: pwsh
