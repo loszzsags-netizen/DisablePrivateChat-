@@ -19,6 +19,8 @@ add_compile_definitions(
     NOMINMAX
     WIN32_LEAN_AND_MEAN
     _CRT_SECURE_NO_WARNINGS
+    _AMD64_
+    _WIN64
 )
 
 add_library(DisablePrivateChat SHARED src/Plugin.cpp)
